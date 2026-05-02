@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Chunav Mitra — Learn about India's election process, timelines, EVMs, voter registration, and more." />
+  <title>Chunav Mitra — Election Education Assistant</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────────── -->
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-badge">🗳️</div>
+      <div class="logo-text">
+        <h1>Chunav Mitra</h1>
+        <span>Election Education Assistant</span>
+      </div>
+    </div>
+    <div class="tricolor-bar" aria-hidden="true">
+      <span class="t-saffron"></span>
+      <span class="t-white"></span>
+      <span class="t-green"></span>
+    </div>
+  </div>
+</header>
+
+<!-- ── Tab Navigation ──────────────────────────────────────────────────── -->
+<nav aria-label="Main navigation">
+  <ul class="tab-list" role="tablist">
+    <li role="none">
+      <button class="tab-btn active" role="tab" data-tab="tab-chat" aria-selected="true">
+        <span class="tab-icon">💬</span> <span>Chat</span>
+      </button>
+    </li>
+    <li role="none">
+      <button class="tab-btn" role="tab" data-tab="tab-timeline" aria-selected="false">
+        <span class="tab-icon">📅</span> <span>Timeline</span>
+      </button>
+    </li>
+    <li role="none">
+      <button class="tab-btn" role="tab" data-tab="tab-quiz" aria-selected="false">
+        <span class="tab-icon">🧠</span> <span>Quiz</span>
+      </button>
+    </li>
+    <li role="none">
+      <button class="tab-btn" role="tab" data-tab="tab-glossary" aria-selected="false">
+        <span class="tab-icon">📖</span> <span>Glossary</span>
+      </button>
+    </li>
+  </ul>
+</nav>
+
+<!-- ── Main Content ─────────────────────────────────────────────────────── -->
+<main>
+
+  <!-- ══════════════════════════════════════════════════════════
+       TAB 1 — CHAT
+  ══════════════════════════════════════════════════════════ -->
+  <section id="tab-chat" class="tab-panel active" role="tabpanel">
+    <h2 class="section-title">Ask Chunav Mitra</h2>
+    <p class="section-subtitle">Ask any question about the Indian election process — voting, EVMs, ECI, timelines, and more.</p>
+
+    <!-- Quick-start chips -->
+    <div class="quick-chips" aria-label="Quick questions">
+      <button class="chip" data-q="How do I register to vote in India?">How to register to vote?</button>
+      <button class="chip" data-q="What is an EVM and how does it work?">What is an EVM?</button>
+      <button class="chip" data-q="What is the Model Code of Conduct?">Model Code of Conduct</button>
+      <button class="chip" data-q="How are Lok Sabha MPs elected?">Lok Sabha elections</button>
+      <button class="chip" data-q="What is VVPAT?">What is VVPAT?</button>
+      <button class="chip" data-q="How does vote counting work in India?">Vote counting process</button>
+    </div>
+
+    <div class="chat-window" id="chat-window" role="log" aria-live="polite" aria-label="Chat messages">
+      <div class="msg bot">
+        <div class="msg-avatar">🗳️</div>
+        <div class="msg-bubble">
+          Jai Hind! 🇮🇳 I'm <strong>Chunav Mitra</strong>, your election education guide.<br><br>
+          I can help you understand India's election process — from voter registration and EVMs
+          to result declaration and government formation. What would you like to know?
+        </div>
+      </div>
+    </div>
+
+    <form class="chat-form" id="chat-form" autocomplete="off">
+      <label for="chat-input" class="sr-only">Ask a question</label>
+      <input
+        type="text"
+        id="chat-input"
+        class="chat-input"
+        placeholder="e.g. What is the role of the Election Commission?"
+        maxlength="400"
+        aria-label="Type your question here"
+      />
+      <button type="submit" id="btn-send" class="btn-send">Ask →</button>
+    </form>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       TAB 2 — TIMELINE
+  ══════════════════════════════════════════════════════════ -->
+  <section id="tab-timeline" class="tab-panel" role="tabpanel">
+    <h2 class="section-title">Election Timeline</h2>
+    <p class="section-subtitle">Key stages from announcement to government formation in a Lok Sabha election.</p>
+
+    <div class="timeline" role="list">
+
+      <div class="timeline-item" role="listitem">
+        <div class="timeline-dot dot-saffron" aria-hidden="true"></div>
+        <div class="timeline-card">
+          <div class="duration">Day 0</div>
+          <h3>Election Notification</h3>
+          <p>The Election Commission of India issues an official notification announcing election dates. This triggers the Model Code of Conduct immediately.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item" role="listitem">
+        <div class="timeline-dot dot-navy" aria-hidden="true"></div>
+        <div class="timeline-card">
+          <div class="duration">Days 1–7</div>
+          <h3>Nomination Filing</h3>
+          <p>Candidates file nomination papers with the Returning Officer. General candidates pay ₹25,000 deposit; SC/ST candidates pay ₹12,500. Proposers from the constituency must sign.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item" role="listitem">
+        <div class="timeline-dot dot-navy" aria-hidden="true"></div>
+        <div class="timeline-card">
+          <div class="duration">Day 8</div>
+          <h3>Scrutiny of Nominations</h3>
+          <p>The Returning Officer examines all nomination papers for validity. Documents and eligibility are verified. Defective forms are rejected at this stage.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item" role="listitem">
+        <div class="timeline-dot dot-navy" aria-hidden="true"></div>
+        <div class="timeline-card">
+          <div class="duration">Day 11</div>
+          <h3>Withdrawal Deadline</h3>
+          <p>Candidates can withdraw their candidacy by 3:00 PM on this date. After this, the final list of contesting candidates is published.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item" role="listitem">
+        <div class="timeline-dot dot-saffron" aria-hidden="true"></div>
+        <div class="timeline-card">
+          <div class="duration">Day 12 onwards</div>
+          <h3>Campaign Period</h3>
+          <p>Candidates and parties campaign across constituencies. The MCC governs all conduct. Campaigning must cease 48 hours before polling (Silent Period).</p>
+        </div>
+      </div>
+
+      <div class="timeline-item" role="listitem">
+        <div class="timeline-dot dot-saffron" aria-hidden="true"></div>
+        <div class="timeline-card">
+          <div class="duration">Polling Day</div>
+          <h3>Voting (Polling)</h3>
+          <p>Voters cast ballots at designated polling booths using EVMs between 7:00 AM and 6:00 PM. VVPAT machines display a paper slip for voter verification. EVMs are sealed after polling ends.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item" role="listitem">
+        <div class="timeline-dot dot-green" aria-hidden="true"></div>
+        <div class="timeline-card">
+          <div class="duration">Counting Day</div>
+          <h3>Counting &amp; Results</h3>
+          <p>Votes are counted under strict ECI supervision at counting centres. Candidates, their agents, and ECI observers are present. Results are declared constituency by constituency.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item" role="listitem">
+        <div class="timeline-dot dot-green" aria-hidden="true"></div>
+        <div class="timeline-card">
+          <div class="duration">Post-Result</div>
+          <h3>Government Formation</h3>
+          <p>The party or alliance winning 272+ seats (simple majority in 543-seat Lok Sabha) is invited by the President to form government. The leader is sworn in as Prime Minister.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       TAB 3 — QUIZ
+  ══════════════════════════════════════════════════════════ -->
+  <section id="tab-quiz" class="tab-panel" role="tabpanel">
+    <h2 class="section-title">Test Your Knowledge</h2>
+    <p class="section-subtitle">AI-generated questions on Indian elections. New question each round.</p>
+
+    <div class="quiz-card">
+      <div id="quiz-area">
+        <!-- Loaded by JS -->
+      </div>
+      <div class="quiz-explanation" id="quiz-explanation"></div>
+      <div class="quiz-controls">
+        <div class="quiz-score" id="quiz-score">Score: <strong>0</strong> / 0</div>
+        <button class="btn-next" id="btn-next" disabled>Next Question →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       TAB 4 — GLOSSARY
+  ══════════════════════════════════════════════════════════ -->
+  <section id="tab-glossary" class="tab-panel" role="tabpanel">
+    <h2 class="section-title">Election Glossary</h2>
+    <p class="section-subtitle">Click any term or search and press Enter for an AI-powered plain-language definition.</p>
+
+    <div class="glossary-search-wrap">
+      <span class="glossary-search-icon" aria-hidden="true">🔍</span>
+      <input
+        type="search"
+        id="glossary-search"
+        class="glossary-search"
+        placeholder="Search a term or type your own and press Enter…"
+        aria-label="Search glossary terms"
+        maxlength="80"
+      />
+    </div>
+
+    <div class="glossary-terms" role="list">
+      <button class="glossary-term-btn" data-term="EVM" role="listitem">EVM <span class="term-arrow">›</span></button>
+      <button class="glossary-term-btn" data-term="VVPAT" role="listitem">VVPAT <span class="term-arrow">›</span></button>
+      <button class="glossary-term-btn" data-term="EPIC" role="listitem">EPIC <span class="term-arrow">›</span></button>
+      <button class="glossary-term-btn" data-term="ECI" role="listitem">ECI <span class="term-arrow">›</span></button>
+      <button class="glossary-term-btn" data-term="Model Code of Conduct" role="listitem">Model Code of Conduct <span class="term-arrow">›</span></button>
+      <button class="glossary-term-btn" data-term="Lok Sabha" role="listitem">Lok Sabha <span class="term-arrow">›</span></button>
+      <button class="glossary-term-btn" data-term="Rajya Sabha" role="listitem">Rajya Sabha <span class="term-arrow">›</span></button>
+      <button class="glossary-term-btn" data-term="Vidhan Sabha" role="listitem">Vidhan Sabha <span class="term-arrow">›</span></button>
+      <button class="glossary-term-btn" data-term="NOTA" role="listitem">NOTA <span class="term-arrow">›</span></button>
+      <button class="glossary-term-btn" data-term="Returning Officer" role="listitem">Returning Officer <span class="term-arrow">›</span></button>
+      <button class="glossary-term-btn" data-term="Reserved Constituency" role="listitem">Reserved Constituency <span class="term-arrow">›</span></button>
+      <button class="glossary-term-btn" data-term="Delimitation" role="listitem">Delimitation <span class="term-arrow">›</span></button>
+      <button class="glossary-term-btn" data-term="By-election" role="listitem">By-election <span class="term-arrow">›</span></button>
+      <button class="glossary-term-btn" data-term="Nomination" role="listitem">Nomination <span class="term-arrow">›</span></button>
+      <button class="glossary-term-btn" data-term="RPA 1951" role="listitem">RPA 1951 <span class="term-arrow">›</span></button>
+      <button class="glossary-term-btn" data-term="Polling Booth" role="listitem">Polling Booth <span class="term-arrow">›</span></button>
+      <button class="glossary-term-btn" data-term="Counting Agent" role="listitem">Counting Agent <span class="term-arrow">›</span></button>
+      <button class="glossary-term-btn" data-term="Voter Registration" role="listitem">Voter Registration <span class="term-arrow">›</span></button>
+      <button class="glossary-term-btn" data-term="Scrutiny" role="listitem">Scrutiny <span class="term-arrow">›</span></button>
+      <button class="glossary-term-btn" data-term="Silent Period" role="listitem">Silent Period <span class="term-arrow">›</span></button>
+    </div>
+
+    <div class="glossary-result" id="glossary-result" role="region" aria-live="polite" aria-label="Term definition">
+      <!-- filled by JS -->
+    </div>
+  </section>
+
+</main>
+
+<!-- ── Footer ──────────────────────────────────────────────────────────── -->
+<footer>
+  <strong>Chunav Mitra</strong> · Built for PromptWars Virtual (Challenge 2) ·
+  Powered by Gemini AI · Not an official ECI resource
+</footer>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
