@@ -5,7 +5,14 @@ from flask_cors import CORS
 import google.generativeai as genai
 from google.api_core import exceptions as google_api_exceptions
 from dotenv import load_dotenv
-
+import logging
+try:
+    import google.cloud.logging as gcp_logging
+    gcp_log_client = gcp_logging.Client()
+    gcp_log_client.setup_logging()
+except Exception:
+    logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 load_dotenv()
 
 app = Flask(__name__)
