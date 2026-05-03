@@ -13,7 +13,7 @@ https://election-edu-app-336388849285.us-central1.run.app
 
 ## Tech Stack
 - Python + Flask backend
-- Google Gemini API (gemini-1.5-flash)
+- Google Gemini API (`gemini-1.5-flash-latest`)
 - Google Antigravity IDE
 - Docker + Google Cloud Run
 
