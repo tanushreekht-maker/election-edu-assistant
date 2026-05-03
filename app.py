@@ -3,6 +3,7 @@ import json
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import google.generativeai as genai
+from google.api_core import exceptions as google_api_exceptions
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -25,7 +26,95 @@ if not api_key:
     raise RuntimeError("GEMINI_API_KEY is not set. Check your .env file.")
 
 genai.configure(api_key=api_key)
-model = genai.GenerativeModel("gemini-1.5-flash-latest")
+
+# Older IDs (e.g. gemini-1.5-flash-latest) often 404 as Google retires aliases — try fallbacks per request.
+_DEFAULT_MODEL_FALLBACKS = (
+    "gemini-2.5-flash",
+    "gemini-2.0-flash",
+    "gemini-1.5-flash",
+    "gemini-1.5-flash-8b",
+)
+
+
+def model_name_candidates():
+    preferred = os.environ.get("GEMINI_MODEL", "").strip()
+    ordered = []
+    if preferred:
+        ordered.append(preferred)
+    for m in _DEFAULT_MODEL_FALLBACKS:
+        if m not in ordered:
+            ordered.append(m)
+    return tuple(ordered)
+
+
+def gemini_reply_text(response) -> str | None:
+    """Extract plain text from a Gemini response, or None if unavailable."""
+    try:
+        txt = response.text
+    except (ValueError, AttributeError):
+        return None
+    if txt is None:
+        return None
+    s = txt.strip()
+    return s if s else None
+
+
+def generate_gemini(full_prompt: str):
+    """Call Gemini trying each configured model until one succeeds. Returns (text or None, error_response_or_None)."""
+    last_error = None
+    for model_id in model_name_candidates():
+        try:
+            mdl = genai.GenerativeModel(model_id)
+            response = mdl.generate_content(full_prompt)
+            reply_text = gemini_reply_text(response)
+            if reply_text is not None:
+                return reply_text, None
+            last_error = "empty response"
+            app.logger.warning("Gemini model %s returned no text", model_id)
+        except google_api_exceptions.NotFound as e:
+            last_error = e
+            app.logger.warning("Gemini model not available %s: %s", model_id, e)
+            continue
+        except google_api_exceptions.ResourceExhausted as e:
+            app.logger.warning("Gemini quota exhausted: %s", e)
+            return None, (
+                jsonify(
+                    {
+                        "error": "API quota exceeded. Wait a few minutes or check your key in Google AI Studio."
+                    }
+                ),
+                429,
+            )
+        except google_api_exceptions.PermissionDenied as e:
+            app.logger.error("Gemini permission denied: %s", e)
+            return None, (
+                jsonify(
+                    {
+                        "error": "API key was rejected. Update GEMINI_API_KEY in Cloud Run (or .env locally)."
+                    }
+                ),
+                403,
+            )
+        except google_api_exceptions.InvalidArgument as e:
+            app.logger.error("Gemini invalid argument: %s", e)
+            return None, (
+                jsonify({"error": "Invalid request to the AI service. Please try a shorter message."}),
+                400,
+            )
+        except Exception as e:
+            last_error = e
+            app.logger.warning("Gemini model %s failed: %s", model_id, e)
+            continue
+
+    app.logger.error("All Gemini models failed; last error: %s", last_error)
+    return None, (
+        jsonify(
+            {
+                "error": "Could not reach the AI service (model unavailable or network error). Check Cloud Run logs and GEMINI_API_KEY."
+            }
+        ),
+        502,
+    )
 
 # ── System prompts ───────────────────────────────────────────────────────────
 BASE_SYSTEM_PROMPT = """
@@ -101,18 +190,6 @@ def sanitize(text: str, max_len: int = 500) -> str:
     return text.strip()[:max_len]
 
 
-def gemini_reply_text(response) -> str | None:
-    """Extract plain text from a Gemini response, or None if unavailable."""
-    try:
-        txt = response.text
-    except (ValueError, AttributeError):
-        return None
-    if txt is None:
-        return None
-    s = txt.strip()
-    return s if s else None
-
-
 def validate_quiz_payload(obj: dict) -> bool:
     if not isinstance(obj, dict):
         return False
@@ -155,10 +232,10 @@ def chat():
 
         # Combine system prompt + user message for Gemini
         full_prompt = f"{system_prompt}\n\nUser: {user_message}"
-        response = model.generate_content(full_prompt)
-        reply_text = gemini_reply_text(response)
-        if reply_text is None:
-            return jsonify({"error": "No response from the model. Please try again."}), 502
+        reply_text, err_payload = generate_gemini(full_prompt)
+        if err_payload is not None:
+            err_body, err_code = err_payload
+            return err_body, err_code
 
         # For quiz context, validate JSON before returning
         if context.lower() == "quiz":
@@ -174,10 +251,8 @@ def chat():
 
         return jsonify({"reply": reply_text, "context": context})
 
-    except genai.types.generation_types.BlockedPromptException:
-        return jsonify({"error": "Your message was flagged. Please rephrase."}), 400
     except Exception as e:
-        app.logger.error(f"Error in /chat: {e}")
+        app.logger.exception("Error in /chat: %s", e)
         return jsonify({"error": "An internal error occurred. Please try again."}), 500
 
 
