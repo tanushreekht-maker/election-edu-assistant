@@ -13,7 +13,7 @@ https://election-edu-app-336388849285.us-central1.run.app
 
 ## Tech Stack
 - Python + Flask backend
-- Google Gemini API (`gemini-1.5-flash-latest`)
+- Google Gemini API (defaults to `gemini-2.5-flash` with automatic fallbacks; override with `GEMINI_MODEL`)
 - Docker + Gunicorn (port 8080) + Google Cloud Run
 
 ## Prompt Strategy
