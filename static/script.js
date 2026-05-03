@@ -5,11 +5,25 @@ const API_URL = "/chat";
 /* ── Tab switching ────────────────────────────────────────────────────────── */
 document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    document.querySelectorAll(".tab-btn").forEach(b => {
+      b.classList.remove("active");
+      b.setAttribute("aria-selected", "false");
+    });
+    document.querySelectorAll(".tab-panel").forEach(p => {
+      p.classList.remove("active");
+      p.hidden = true;
+    });
     btn.classList.add("active");
-    document.getElementById(btn.dataset.tab).classList.add("active");
+    btn.setAttribute("aria-selected", "true");
+    const panel = document.getElementById(btn.dataset.tab);
+    panel.classList.add("active");
+    panel.hidden = false;
   });
+});
+
+/* Panels start hidden except first (CSS handles .active); keep hidden in sync for a11y */
+document.querySelectorAll(".tab-panel").forEach(panel => {
+  panel.hidden = !panel.classList.contains("active");
 });
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -134,11 +148,24 @@ async function loadQuiz() {
 }
 
 function renderQuiz(q) {
-  const optionsHtml = q.options.map((opt, i) => {
-    const letter = opt.charAt(0);
-    const text   = opt.slice(3);
+  const correct = String(q.answer || "").trim().toUpperCase();
+  if (
+    !/^[A-D]$/.test(correct) ||
+    !Array.isArray(q.options) ||
+    q.options.length !== 4
+  ) {
+    quizArea.innerHTML = `<p style="color:#C0392B;padding:20px">Invalid question format. Tap Next Question.</p>`;
+    btnNext.disabled = false;
+    return;
+  }
+
+  const optionsHtml = q.options.map((opt) => {
+    const raw = String(opt).trim();
+    const m = raw.match(/^([A-Da-d])[.)]\s*(.*)$/);
+    const letter = m ? m[1].toUpperCase() : raw.charAt(0).toUpperCase();
+    const text = (m ? m[2] : raw.slice(3)).trim();
     return `
-      <button class="quiz-option" data-letter="${letter}" onclick="selectOption(this, '${q.answer}')">
+      <button type="button" class="quiz-option" data-letter="${letter}">
         <span class="option-letter">${letter}</span>
         ${escapeHtml(text)}
       </button>
@@ -152,25 +179,31 @@ function renderQuiz(q) {
       💡 ${escapeHtml(q.explanation)}
     </div>
   `;
+
+  quizArea.querySelectorAll(".quiz-option").forEach((btn) => {
+    btn.addEventListener("click", () => selectOption(btn, correct));
+  });
 }
 
-window.selectOption = function(btn, correctLetter) {
+function selectOption(btn, correctLetter) {
   if (quizAnswered) return;
   quizAnswered = true;
   quizTotal++;
 
-  const chosen = btn.dataset.letter;
+  const chosen = String(btn.dataset.letter || "").toUpperCase();
   document.querySelectorAll(".quiz-option").forEach(opt => {
     opt.disabled = true;
-    if (opt.dataset.letter === correctLetter) opt.classList.add("correct");
-    else if (opt.dataset.letter === chosen) opt.classList.add("wrong");
+    const L = String(opt.dataset.letter || "").toUpperCase();
+    if (L === correctLetter) opt.classList.add("correct");
+    else if (L === chosen) opt.classList.add("wrong");
   });
 
   if (chosen === correctLetter) quizScore++;
-  document.getElementById("quiz-explanation").classList.add("visible");
+  const expl = document.getElementById("quiz-explanation");
+  if (expl) expl.classList.add("visible");
   scoreEl.innerHTML = `Score: <strong>${quizScore}</strong> / ${quizTotal}`;
   btnNext.disabled = false;
-};
+}
 
 btnNext.addEventListener("click", loadQuiz);
 
@@ -180,13 +213,6 @@ btnNext.addEventListener("click", loadQuiz);
 const glossarySearch  = document.getElementById("glossary-search");
 const glossaryResult  = document.getElementById("glossary-result");
 const glossaryTerms   = document.querySelectorAll(".glossary-term-btn");
-
-const GLOSSARY_TERMS = [
-  "EVM", "VVPAT", "EPIC", "ECI", "MCC", "Lok Sabha", "Rajya Sabha",
-  "Vidhan Sabha", "Nomination", "Scrutiny", "Delimitation", "By-election",
-  "Model Code of Conduct", "Returning Officer", "Reserved Constituency",
-  "NOTA", "Voter Registration", "RPA 1951", "Polling Booth", "Counting Agent"
-];
 
 async function lookupTerm(term) {
   glossaryResult.style.display = "none";

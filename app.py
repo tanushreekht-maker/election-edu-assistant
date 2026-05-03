@@ -10,6 +10,15 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
+
+@app.after_request
+def security_headers(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    return response
+
 # ── Gemini setup ────────────────────────────────────────────────────────────
 api_key = os.environ.get("GEMINI_API_KEY")
 if not api_key:
@@ -92,6 +101,36 @@ def sanitize(text: str, max_len: int = 500) -> str:
     return text.strip()[:max_len]
 
 
+def gemini_reply_text(response) -> str | None:
+    """Extract plain text from a Gemini response, or None if unavailable."""
+    try:
+        txt = response.text
+    except (ValueError, AttributeError):
+        return None
+    if txt is None:
+        return None
+    s = txt.strip()
+    return s if s else None
+
+
+def validate_quiz_payload(obj: dict) -> bool:
+    if not isinstance(obj, dict):
+        return False
+    if not isinstance(obj.get("question"), str) or not obj["question"].strip():
+        return False
+    opts = obj.get("options")
+    if not isinstance(opts, list) or len(opts) != 4:
+        return False
+    if not all(isinstance(o, str) and o.strip() for o in opts):
+        return False
+    ans = obj.get("answer")
+    if not isinstance(ans, str) or len(ans.strip()) != 1 or ans.strip() not in "ABCD":
+        return False
+    if not isinstance(obj.get("explanation"), str) or not obj["explanation"].strip():
+        return False
+    return True
+
+
 # ── Routes ────────────────────────────────────────────────────────────────────
 @app.route("/")
 def index():
@@ -117,7 +156,9 @@ def chat():
         # Combine system prompt + user message for Gemini
         full_prompt = f"{system_prompt}\n\nUser: {user_message}"
         response = model.generate_content(full_prompt)
-        reply_text = response.text.strip()
+        reply_text = gemini_reply_text(response)
+        if reply_text is None:
+            return jsonify({"error": "No response from the model. Please try again."}), 502
 
         # For quiz context, validate JSON before returning
         if context.lower() == "quiz":
@@ -125,6 +166,8 @@ def chat():
                 # Strip accidental markdown fences
                 clean = reply_text.replace("```json", "").replace("```", "").strip()
                 parsed = json.loads(clean)
+                if not validate_quiz_payload(parsed):
+                    return jsonify({"error": "Quiz format was invalid. Please try again."}), 500
                 return jsonify({"reply": parsed, "context": "quiz"})
             except json.JSONDecodeError:
                 return jsonify({"error": "Quiz generation failed. Please try again."}), 500
